@@ -94,12 +94,17 @@ class TES4Collection {
         $fileToIndex = [];
         foreach($this->files as $index => $file) {
             $fileToIndex[$file->getName()] = $index;
+
         }
 
         foreach($this->files as $index => $file) {
             $masters = $file->getMasters();
             //Index the file so it can see itself
-            $this->expandTables[$file->getName()] = [count($masters) => $index];
+            //$this->expandTables[$file->getName()] = [count($masters) => $index];
+            for($x = 0; $x <= 0xFF; ++$x) {
+                $this->expandTables[$file->getName()][$x] = $index;
+            }
+
             foreach($masters as $masterId => $masterName) {
                 if(!isset($fileToIndex[$masterName])) {
                     throw new InconsistentESFilesException("File ".$file->getName()." references a master not present in collection.");

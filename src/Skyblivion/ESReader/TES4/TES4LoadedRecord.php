@@ -29,11 +29,6 @@ class TES4LoadedRecord implements TES4Record
      */
     private $data = [];
 
-    public function getSize()
-    {
-        return $this->size;
-    }
-
     public function getType() : string
     {
         return $this->type;
@@ -77,6 +72,7 @@ class TES4LoadedRecord implements TES4Record
         //Decompression
         if($flags & 0x00040000) {
             //Skip the uncompressed data size
+            $this->size = current(unpack('V',substr($data,0,4)));
             $data = substr($data, 4);
             $data = gzuncompress($data);
         }
@@ -85,8 +81,8 @@ class TES4LoadedRecord implements TES4Record
 
         while($i < $this->size) {
             $subrecordType = substr($data, $i, 4);
-            $subrecordSize = current(unpack("v", substr($data, $i+2, 2)));
-            $subrecordData = substr($data, $i+4, $subrecordSize);
+            $subrecordSize = current(unpack("v", substr($data, $i+4, 2)));
+            $subrecordData = substr($data, $i+6, $subrecordSize);
 
             if(!isset($this->data[$subrecordType])) {
                 $this->data[$subrecordType] = [];
