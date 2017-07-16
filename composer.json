@@ -1,0 +1,19 @@
+{
+    "name": "tesskyblivion/esreader",
+    "description": "Allows for accessing .esm ( Elder Scrolls Master ) and .esp ( Elder Scrolls Plugin ) files.\"",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ormin",
+            "email": "orminapod3@gmail.com"
+        }
+    ],
+    "require": {
+        "farafiri/php-parsing-tool": "^1.0",
+        "eloquent/enumeration": "^5.1"
+    },
+    "autoload": {
+        "psr-0": {"": "src/"}
+    }
+}
