@@ -24,7 +24,15 @@ class TES4File
      */
     private $masters = [];
 
+    /**
+     * @var bool
+     */
     private $initialized = false;
+
+    /**
+     * @var TES4Grup[]
+     */
+    private $grups = [];
 
     /**
      * File constructor.
@@ -37,46 +45,58 @@ class TES4File
         $this->name = $name;
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
 
     public function getMasters()
     {
-        if(!$this->initialized) {
+        if (!$this->initialized) {
             $this->initialize();
         }
 
         return $this->masters;
     }
 
-    public function load() : \Traversable {
+    public function load(): \Traversable
+    {
         $filepath = $this->path . "/" . $this->name;
         $filesize = filesize($filepath);
-        $h = fopen($filepath,"rb");
-        if(!$h) {
+        $h = fopen($filepath, "rb");
+        if (!$h) {
             throw new FileNotFoundException("File " . $filepath . " not found.");
         }
 
         $this->fetchTES4($h);
 
-        while(ftell($h) < $filesize) {
+        while (ftell($h) < $filesize) {
             $grup = new TES4Grup();
-            foreach($grup->load($h) as $loadedRecord) {
+            foreach ($grup->load($h) as $loadedRecord) {
                 yield $loadedRecord;
             }
+            $this->grups[$grup->getType()] = $grup;
         }
 
         fclose($h);
 
     }
 
-    private function fetchTES4($h) {
+    public function getGrup(string $type) : ?\Iterator
+    {
+        if(!isset($this->grups[$type])) {
+            return null;
+        }
+
+        return new \ArrayIterator($this->grups[$type]);
+    }
+
+    private function fetchTES4($h)
+    {
         $tes4record = new TES4LoadedRecord();
         $tes4record->load($h);
 
-        if($tes4record->getType() != "TES4") {
+        if ($tes4record->getType() != "TES4") {
             throw new InvalidESFileException("Invalid magic.");
         }
 
@@ -84,18 +104,18 @@ class TES4File
 
     }
 
-    private function initialize() {
+    private function initialize()
+    {
         $filepath = $this->path . "/" . $this->name;
-        $h = fopen($filepath,"rb");
-        if(!$h) {
+        $h = fopen($filepath, "rb");
+        if (!$h) {
             throw new FileNotFoundException("File " . $filepath . " not found.");
         }
 
         $tes4record = $this->fetchTES4($h);
         $masters = $tes4record->getSubrecords("MAST");
         $masterIndex = 0;
-        foreach($masters as $master)
-        {
+        foreach ($masters as $master) {
             $this->masters[$masterIndex++] = $master;
         }
 

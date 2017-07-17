@@ -33,13 +33,13 @@ class TES5File
         $this->name = $name;
     }
 
-    public function load() : void {
+    public function load(): void
+    {
         $filepath = $this->path . "/" . $this->name;
-        $h = fopen($filepath,"rb");
-        if(!$h) {
+        $h = fopen($filepath, "rb");
+        if (!$h) {
             throw new FileNotFoundException("File " . $filepath . " not found.");
         }
-
 
 
     }

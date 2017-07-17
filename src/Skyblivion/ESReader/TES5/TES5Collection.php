@@ -2,7 +2,8 @@
 
 namespace Skyblivion\ESReader;
 
-class TES5Collection {
+class TES5Collection
+{
 
     private $path;
 
@@ -22,15 +23,14 @@ class TES5Collection {
         $this->path = $path;
     }
 
-    public function add($name) : void
+    public function add($name): void
     {
         $this->files[$this->lastIndex++] = new TES4File($this->path, $name);
     }
 
-    public function load() : void
+    public function load(): void
     {
-        foreach($this->files as $file)
-        {
+        foreach ($this->files as $file) {
             $file->load();
         }
     }

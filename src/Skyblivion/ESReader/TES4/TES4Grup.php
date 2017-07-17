@@ -33,36 +33,44 @@ class TES4Grup
     }
 
     /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
      * @param $handle
      * @param GRUPPattern $pattern
      * @return \Traversable
      * @throws InvalidESFileException
      */
-    public function load($handle) : \Traversable
+    public function load($handle): \Traversable
     {
         $curpos = ftell($handle);
         $header = fread($handle, self::GRUP_HEADER_SIZE);
-        if(substr($header,0,4) != "GRUP") {
-            throw new InvalidESFileException("Invalid GRUP magic, found ".substr($header,0,4));
+        if (substr($header, 0, 4) != "GRUP") {
+            throw new InvalidESFileException("Invalid GRUP magic, found " . substr($header, 0, 4));
         }
 
-        $this->size = current(unpack("V", substr($header,4,4)));
-        $this->type = substr($header,8,4);
+        $this->size = current(unpack("V", substr($header, 4, 4)));
+        $this->type = substr($header, 8, 4);
 
         $end = $curpos + $this->size; //Size includes the header
         /**
          * @var GRUPPatternRecord $patternRecord
          */
-        while(ftell($handle) < $end) {
+        while (ftell($handle) < $end) {
 
             //Ineffective lookahead, but oh well, fuck it
             $nextEntryType = fread($handle, 4);
             fseek($handle, -4, SEEK_CUR);
 
-            switch($nextEntryType) {
+            switch ($nextEntryType) {
                 case 'GRUP': {
                     $nestedGrup = new TES4Grup();
-                    foreach($nestedGrup->load($handle) as $subrecord) {
+                    foreach ($nestedGrup->load($handle) as $subrecord) {
                         yield $subrecord;
                     }
                     break;
