@@ -62,7 +62,6 @@ class TES4File
         $this->fetchTES4($h);
 
         while(ftell($h) < $filesize) {
-            echo 'load grup'.PHP_EOL;
             $grup = new TES4Grup();
             foreach($grup->load($h) as $loadedRecord) {
                 yield $loadedRecord;
@@ -74,7 +73,6 @@ class TES4File
     }
 
     private function fetchTES4($h) {
-        echo 'fetch tes4'.PHP_EOL;
         $tes4record = new TES4LoadedRecord();
         $tes4record->load($h);
 

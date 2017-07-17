@@ -48,7 +48,6 @@ class TES4Collection {
 
         foreach($this->files as $index => $file)
         {
-            echo 'load file'.PHP_EOL;
             /**
              * @var TES4LoadedRecord $loadedRecord
              */
@@ -59,7 +58,7 @@ class TES4Collection {
                 $this->records[$expandedFormid] = $loadedRecord;
                 $edid = $loadedRecord->getSubrecord('EDID');
                 if($edid !== null) {
-                    $this->edidIndex[$edid] = $loadedRecord;
+                    $this->edidIndex[strtolower(trim($edid))] = $loadedRecord;
                 }
             }
         }
@@ -67,11 +66,12 @@ class TES4Collection {
 
     public function findByEDID(string $edid) : TES4Record
     {
-        if(!isset($this->edidIndex[$edid])) {
+        $lowerEdid = strtolower($edid);
+        if(!isset($this->edidIndex[$lowerEdid])) {
             throw new RecordNotFoundException("EDID ".$edid." not found.");
         }
 
-        return $this->edidIndex[$edid];
+        return $this->edidIndex[$lowerEdid];
     }
 
     public function expand(int $formid, string $file)
