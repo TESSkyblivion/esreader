@@ -54,7 +54,7 @@ class TES4Collection
 
     public function add($name): void
     {
-        $file = new TES4File($this->path, $name);
+        $file = new TES4File($this, $this->path, $name);
         $this->files[$this->lastIndex++] = $file;
         $this->indexedFiles[$name] = $file;
     }
@@ -69,9 +69,9 @@ class TES4Collection
              */
             foreach ($file->load() as $loadedRecord) {
                 //no FORMID class encapsulation due to memory budgeting ;)
-                $expandedFormid = $this->expand($loadedRecord->getFormId(), $file->getName());
+                $formid = $loadedRecord->getFormId();
                 //TODO resolve conflicts
-                $this->records[$expandedFormid] = $loadedRecord;
+                $this->records[$formid] = $loadedRecord;
                 $edid = $loadedRecord->getSubrecord('EDID');
                 if ($edid !== null) {
                     $this->edidIndex[strtolower(trim($edid))] = $loadedRecord;

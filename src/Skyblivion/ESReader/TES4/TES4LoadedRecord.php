@@ -2,17 +2,24 @@
 
 namespace Skyblivion\ESReader\TES4;
 
-
-use Skyblivion\ESReader\Exception\InvalidESFileException;
-
 class TES4LoadedRecord implements TES4Record
 {
     const RECORD_HEADER_SIZE = 20;
 
     /**
+     * @var TES4File
+     */
+    private $placedFile;
+
+    /**
      * @var int;
      */
     private $formid;
+
+    /**
+     * @var int;
+     */
+    private $expandedFormid;
 
     /**
      * @var int
@@ -28,6 +35,16 @@ class TES4LoadedRecord implements TES4Record
      * @var array
      */
     private $data = [];
+
+    /**
+     * @var array
+     */
+    private $dataAsFormidCache = [];
+
+    public function __construct(TES4File $placedFile)
+    {
+        $this->placedFile = $placedFile;
+    }
 
     public function getType(): string
     {
@@ -52,9 +69,31 @@ class TES4LoadedRecord implements TES4Record
         return $this->data[$type][0];
     }
 
+    public function getSubrecordAsFormid(string $type): ?int
+    {
+        if(!isset($this->dataAsFormidCache[$type])) {
+            $subrecord = $this->getSubrecord($type);
+            if(null === $subrecord) {
+                return null;
+            }
+
+            if(strlen($subrecord) < 4) {
+                return null;
+            }
+
+            $this->dataAsFormidCache[$type] = $this->placedFile->expand(unpack('V', substr($subrecord,0,4)));
+        }
+
+        return $this->dataAsFormidCache[$type];
+    }
+
+
     public function getFormId(): int
     {
-        return $this->formid;
+        if($this->expandedFormid === null) {
+            $this->expandedFormid = $this->placedFile->expand($this->formid);
+        }
+        return $this->expandedFormid;
     }
 
     public function load($handle): void

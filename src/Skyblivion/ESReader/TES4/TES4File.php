@@ -35,12 +35,19 @@ class TES4File
     private $grups = [];
 
     /**
+     * @var TES4Collection
+     */
+    private $collection;
+
+    /**
      * File constructor.
+     * @param TES4Collection $collection
      * @param string $path
      * @param string $name
      */
-    public function __construct(string $path, string $name)
+    public function __construct(TES4Collection $collection, string $path, string $name)
     {
+        $this->collection = $collection;
         $this->path = $path;
         $this->name = $name;
     }
@@ -72,7 +79,7 @@ class TES4File
 
         while (ftell($h) < $filesize) {
             $grup = new TES4Grup();
-            foreach ($grup->load($h) as $loadedRecord) {
+            foreach ($grup->load($h, $this) as $loadedRecord) {
                 yield $loadedRecord;
             }
             $this->grups[$grup->getType()] = $grup;
@@ -91,9 +98,14 @@ class TES4File
         return new \ArrayIterator($this->grups[$type]);
     }
 
+    public function expand(int $formid) : int
+    {
+        return $this->collection->expand($formid, $this->getName());
+    }
+
     private function fetchTES4($h)
     {
-        $tes4record = new TES4LoadedRecord();
+        $tes4record = new TES4LoadedRecord($this);
         $tes4record->load($h);
 
         if ($tes4record->getType() != "TES4") {

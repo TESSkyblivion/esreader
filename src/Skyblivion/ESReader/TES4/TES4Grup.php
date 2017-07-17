@@ -42,11 +42,11 @@ class TES4Grup
 
     /**
      * @param $handle
-     * @param GRUPPattern $pattern
+     * @param TES4File $file
      * @return \Traversable
      * @throws InvalidESFileException
      */
-    public function load($handle): \Traversable
+    public function load($handle, TES4File $file): \Traversable
     {
         $curpos = ftell($handle);
         $header = fread($handle, self::GRUP_HEADER_SIZE);
@@ -70,13 +70,13 @@ class TES4Grup
             switch ($nextEntryType) {
                 case 'GRUP': {
                     $nestedGrup = new TES4Grup();
-                    foreach ($nestedGrup->load($handle) as $subrecord) {
+                    foreach ($nestedGrup->load($handle, $file) as $subrecord) {
                         yield $subrecord;
                     }
                     break;
                 }
                 default: {
-                    $record = new TES4LoadedRecord();
+                    $record = new TES4LoadedRecord($file);
                     $record->load($handle);
                     yield $record;
                     break;
