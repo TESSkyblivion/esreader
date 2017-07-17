@@ -80,6 +80,15 @@ class TES4Collection
         }
     }
 
+    public function findByFormid(int $formid): TES4Record
+    {
+        if (!isset($this->records[$formid])) {
+            throw new RecordNotFoundException("Form " . $formid . " not found.");
+        }
+
+        return $this->records[$formid];
+    }
+
     public function findByEDID(string $edid): TES4Record
     {
         $lowerEdid = strtolower($edid);
@@ -95,7 +104,7 @@ class TES4Collection
         $grups = new \AppendIterator();
         foreach ($this->files as $index => $file) {
             $grup = $file->getGrup($type);
-            if($grup) {
+            if ($grup) {
                 $grups->append($grup);
             }
         }

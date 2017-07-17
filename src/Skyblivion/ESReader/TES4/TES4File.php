@@ -89,16 +89,16 @@ class TES4File
 
     }
 
-    public function getGrup(string $type) : ?\Iterator
+    public function getGrup(string $type): ?\Iterator
     {
-        if(!isset($this->grups[$type])) {
+        if (!isset($this->grups[$type])) {
             return null;
         }
 
         return new \ArrayIterator($this->grups[$type]);
     }
 
-    public function expand(int $formid) : int
+    public function expand(int $formid): int
     {
         return $this->collection->expand($formid, $this->getName());
     }

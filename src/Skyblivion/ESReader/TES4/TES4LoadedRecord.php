@@ -71,17 +71,17 @@ class TES4LoadedRecord implements TES4Record
 
     public function getSubrecordAsFormid(string $type): ?int
     {
-        if(!isset($this->dataAsFormidCache[$type])) {
+        if (!isset($this->dataAsFormidCache[$type])) {
             $subrecord = $this->getSubrecord($type);
-            if(null === $subrecord) {
+            if (null === $subrecord) {
                 return null;
             }
 
-            if(strlen($subrecord) < 4) {
+            if (strlen($subrecord) < 4) {
                 return null;
             }
 
-            $this->dataAsFormidCache[$type] = $this->placedFile->expand(unpack('V', substr($subrecord,0,4)));
+            $this->dataAsFormidCache[$type] = $this->placedFile->expand(unpack('V', substr($subrecord, 0, 4)));
         }
 
         return $this->dataAsFormidCache[$type];
@@ -90,7 +90,7 @@ class TES4LoadedRecord implements TES4Record
 
     public function getFormId(): int
     {
-        if($this->expandedFormid === null) {
+        if ($this->expandedFormid === null) {
             $this->expandedFormid = $this->placedFile->expand($this->formid);
         }
         return $this->expandedFormid;
