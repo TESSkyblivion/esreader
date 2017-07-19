@@ -81,7 +81,7 @@ class TES4LoadedRecord implements TES4Record
                 return null;
             }
 
-            $this->dataAsFormidCache[$type] = $this->placedFile->expand(unpack('V', substr($subrecord, 0, 4)));
+            $this->dataAsFormidCache[$type] = $this->placedFile->expand(current(unpack('V', substr($subrecord, 0, 4))));
         }
 
         return $this->dataAsFormidCache[$type];
