@@ -2,18 +2,14 @@
 
 namespace Skyblivion\ESReader\TES4;
 
-
 use Skyblivion\ESReader\Exception\InvalidESFileException;
-use Skyblivion\ESReader\GRUPPattern;
-use Skyblivion\ESReader\GRUPPatternPossibility;
-use Skyblivion\ESReader\GRUPPatternRecord;
 
 /**
  * Represents top level GRUP
  * Class TES4Grup
  * @package Skyblivion\ESReader\TES4
  */
-class TES4Grup
+class TES4Grup implements \IteratorAggregate
 {
     const GRUP_HEADER_SIZE = 20;
 
@@ -27,6 +23,11 @@ class TES4Grup
      */
     private $type;
 
+    /**
+     * @var TES4Record[]
+     */
+    private $records;
+
     public function getSize()
     {
         return $this->size;
@@ -38,6 +39,14 @@ class TES4Grup
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return \ArrayIterator
+     */
+    public function getIterator(): array
+    {
+        return new \ArrayIterator($this->records);
     }
 
     /**
@@ -58,9 +67,6 @@ class TES4Grup
         $this->type = substr($header, 8, 4);
 
         $end = $curpos + $this->size; //Size includes the header
-        /**
-         * @var GRUPPatternRecord $patternRecord
-         */
         while (ftell($handle) < $end) {
 
             //Ineffective lookahead, but oh well, fuck it
@@ -78,6 +84,7 @@ class TES4Grup
                 default: {
                     $record = new TES4LoadedRecord($file);
                     $record->load($handle);
+                    $this->records[] = $record;
                     yield $record;
                     break;
                 }

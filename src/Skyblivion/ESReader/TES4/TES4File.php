@@ -95,7 +95,7 @@ class TES4File
             return null;
         }
 
-        return new \ArrayIterator($this->grups[$type]);
+        return $this->grups[$type]->getIterator();
     }
 
     public function expand(int $formid): int
