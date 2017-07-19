@@ -44,7 +44,7 @@ class TES4Grup implements \IteratorAggregate
     /**
      * @return \ArrayIterator
      */
-    public function getIterator(): array
+    public function getIterator()
     {
         return new \ArrayIterator($this->records);
     }
