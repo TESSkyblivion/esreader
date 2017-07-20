@@ -59,7 +59,7 @@ class TES4Collection
         $this->indexedFiles[$name] = $file;
     }
 
-    public function load(): void
+    public function load(TES4FileLoadScheme $scheme): void
     {
         $this->buildExpandTables();
 
@@ -67,7 +67,7 @@ class TES4Collection
             /**
              * @var TES4LoadedRecord $loadedRecord
              */
-            foreach ($file->load() as $loadedRecord) {
+            foreach ($file->load($scheme) as $loadedRecord) {
                 //no FORMID class encapsulation due to memory budgeting ;)
                 $formid = $loadedRecord->getFormId();
                 //TODO resolve conflicts

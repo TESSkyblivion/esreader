@@ -66,7 +66,7 @@ class TES4File
         return $this->masters;
     }
 
-    public function load(): \Traversable
+    public function load(TES4FileLoadScheme $scheme): \Traversable
     {
         $filepath = $this->path . "/" . $this->name;
         $filesize = filesize($filepath);
@@ -79,23 +79,39 @@ class TES4File
 
         while (ftell($h) < $filesize) {
             $grup = new TES4Grup();
-            foreach ($grup->load($h, $this) as $loadedRecord) {
-                yield $loadedRecord;
+
+            $header = fread($h, TES4Grup::GRUP_HEADER_SIZE);
+            fseek($h, -TES4Grup::GRUP_HEADER_SIZE, SEEK_CUR);
+
+            if (substr($header, 0, 4) != "GRUP") {
+                throw new InvalidESFileException("Invalid GRUP magic, found " . substr($header, 0, 4));
             }
-            $this->grups[$grup->getType()] = $grup;
+
+            $grupType = TES4RecordType::memberByValue(substr($header, 8, 4));
+            $grupSize = current(unpack("V", substr($header, 4, 4)));
+
+            if($scheme->shouldLoad($grupType)) {
+                foreach ($grup->load($h, $this, $scheme->getRulesFor($grupType), true) as $loadedRecord) {
+                    yield $loadedRecord;
+                }
+            } else {
+                fseek($h, $grupSize, SEEK_CUR);
+            }
+
+            $this->grups[$grup->getType()->value()] = $grup;
         }
 
         fclose($h);
 
     }
 
-    public function getGrup(string $type): ?\Iterator
+    public function getGrup(TES4RecordType $type): ?\Iterator
     {
-        if (!isset($this->grups[$type])) {
+        if (!isset($this->grups[$type->value()])) {
             return null;
         }
 
-        return $this->grups[$type]->getIterator();
+        return $this->grups[$type->value()]->getIterator();
     }
 
     public function expand(int $formid): int
@@ -105,12 +121,13 @@ class TES4File
 
     private function fetchTES4($h)
     {
-        $tes4record = new TES4LoadedRecord($this);
-        $tes4record->load($h);
+        $recordHeader = fread($h, TES4LoadedRecord::RECORD_HEADER_SIZE);
+        $recordSize = current(unpack("V", substr($recordHeader, 4, 4)));
+        $recordFormid = current(unpack("V", substr($recordHeader, 0xC, 4)));
+        $recordFlags = current(unpack("V", substr($recordHeader, 8, 4)));
+        $tes4record = new TES4LoadedRecord($this, TES4RecordType::TES4(), $recordFormid, $recordSize, $recordFlags);
 
-        if ($tes4record->getType() != "TES4") {
-            throw new InvalidESFileException("Invalid magic.");
-        }
+        $tes4record->load($h, new TES4RecordLoadScheme(['MAST']));
 
         return $tes4record;
 
