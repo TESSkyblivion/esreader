@@ -99,7 +99,7 @@ class TES4Collection
         return $this->edidIndex[$lowerEdid];
     }
 
-    public function getGrup(string $type): \Traversable
+    public function getGrup(TES4RecordType $type): \Traversable
     {
         $grups = new \AppendIterator();
         foreach ($this->files as $index => $file) {
