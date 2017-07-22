@@ -4,6 +4,8 @@ namespace Skyblivion\ESReader\TES4;
 
 use Skyblivion\ESReader\Exception\InconsistentESFilesException;
 use Skyblivion\ESReader\Exception\RecordNotFoundException;
+use Skyblivion\ESReader\Struct\Trie;
+use Skyblivion\ESReader\Struct\TrieIterator;
 
 class TES4Collection
 {
@@ -24,9 +26,9 @@ class TES4Collection
     private $records = [];
 
     /**
-     * @var array
+     * @var Trie
      */
-    private $edidIndex = [];
+    private $edidIndex;
 
     /**
      * @var TES4File[]
@@ -50,6 +52,7 @@ class TES4Collection
     public function __construct(string $path)
     {
         $this->path = $path;
+        $this->edidIndex = new Trie();
     }
 
     public function add($name): void
@@ -74,7 +77,7 @@ class TES4Collection
                 $this->records[$formid] = $loadedRecord;
                 $edid = $loadedRecord->getSubrecord('EDID');
                 if ($edid !== null) {
-                    $this->edidIndex[strtolower(trim($edid))] = $loadedRecord;
+                    $this->edidIndex->add(strtolower(trim($edid)), $loadedRecord);
                 }
             }
         }
@@ -92,11 +95,22 @@ class TES4Collection
     public function findByEDID(string $edid): TES4Record
     {
         $lowerEdid = strtolower($edid);
-        if (!isset($this->edidIndex[$lowerEdid])) {
+        $val = $this->edidIndex->search($lowerEdid);
+        if (null === $val) {
             throw new RecordNotFoundException("EDID " . $edid . " not found.");
         }
 
-        return $this->edidIndex[$lowerEdid];
+        return $val;
+    }
+
+    /**
+     * @param string $edid
+     * @return TrieIterator
+     */
+    public function findByEDIDPrefix(string $edid): TrieIterator
+    {
+        $lowerEdid = strtolower($edid);
+        return $this->edidIndex->searchPrefix($lowerEdid);
     }
 
     public function getGrup(TES4RecordType $type): \Traversable
